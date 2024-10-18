@@ -29,7 +29,7 @@ rank(){
 
     if [[ $gender =~ ^[fF]$ ]]
     then
-        female_rank=$(grep -n -i "^$name,F," "$file" | grep -o '^[0-9]*')
+    	female_rank=$(grep ",F," "$file" | grep -n -i "^$name,F," | grep -o '^[0-9]*')    
 
         if [ -n "$female_rank" ]
         then
@@ -41,7 +41,7 @@ rank(){
 
     if [[ $gender =~ ^[mM]$ ]]
     then
-        male_rank=$(grep -n -i "^$name,M," "$file" | grep -o '^[0-9]*')
+        male_rank=$(grep ",M," "$file" | grep -n -i "^$name,M," | grep -o '^[0-9]*')
 
         if [ -n "$male_rank" ]
         then
@@ -53,21 +53,21 @@ rank(){
 
     if [[ $gender =~ ^[bB]$ ]]
     then
-        female_rank=$(grep -n -i "^$name,F," "$file" | grep -o '^[0-9]*')
-        male_rank=$(grep -n -i "^$name,M," "$file" | grep -o '^[0-9]*')
+        female_rank=$(grep ",F," "$file" | grep -n -i "^$name,F," | grep -o '^[0-9]*')
+        male_rank=$(grep ",M," "$file" | grep -n -i "^$name,M," | grep -o '^[0-9]*')
 
-        if [ -n "$female_rank" ]
-        then
-            echo "$year: $name ranked $female_rank out of $female_total female names."
-        else
-            echo "$year: $name not found among female names."
-        fi
-
-        if [ -n "$male_rank" ]
+		if [ -n "$male_rank" ]
         then
             echo "$year: $name ranked $male_rank out of $male_total male names."
         else
             echo "$year: $name not found among male names."
+        fi
+        
+		if [ -n "$female_rank" ]
+        then
+            echo "$year: $name ranked $female_rank out of $female_total female names."
+        else
+            echo "$year: $name not found among female names."
         fi
     fi
 }
@@ -94,12 +94,6 @@ then
 	exit 2
 fi
 
-if [ ! -f "$file" ]
-then
-    echo "No data for $year">&2
-    exit 4
-fi
-
 if ! [[ $gender =~ ^[fmbFMB]$ ]]
 then
     echo "Badly formatted assigned gender: $gender">&2
@@ -107,18 +101,26 @@ then
     exit 2
 fi
 
+if [ ! -f "$file" ]
+then
+    echo "No data for $year">&2
+    exit 4
+fi
+
 female_total=$(grep -c ",F," "$file")
 male_total=$(grep -c ",M," "$file")
 
-while read name
+while read line
 do
-	if ! [[ $name =~ ^[A-Za-z]+$ ]]
-	then
-		echo "Badly formatted name: $name">&2
-		exit 3
-	fi
-
-	rank "$name" "$gender" "$file" "$year"
-
+	for name in $line
+	do
+		if ! [[ $name =~ ^[A-Za-z]+$ ]]
+		then
+			echo "Badly formatted name: $name">&2
+			exit 3
+		fi
+		rank "$name" "$gender" "$file" "$year"
+	done
 done
+
 
