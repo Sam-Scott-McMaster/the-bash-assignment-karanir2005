@@ -1,0 +1,100 @@
+#!/bin/bash
+
+usage(){
+	echo "bn <year> <assigned gender: f|F|m|M|b|B>">&2
+}
+
+if [ "$#" != 2 ]
+then
+	
+	usage
+	exit 1
+fi
+
+local year="$1"
+local file="us_baby_names/yob$year.txt"
+local gender="$2"
+
+if ! [[ $year =~ "^[0-9]{4}$" ]]
+then
+	echo "Badly formatted year: $year">&2
+	usage
+	exit 2
+fi
+
+if [ ! -f "$file" ]
+then
+    echo "No data for $year">&2
+    exit 4
+fi
+
+if ! [[ $gender =~ "^[fmbFMB]$" ]]
+then
+    echo "Badly formatted assigned gender: $year">&2
+    usage
+    exit 2
+fi
+
+local female_total=$(grep -c ",F," "$file")
+local male_total=$(grep -c ",M," "$file")
+
+while read name
+do
+	if ! [[ $name =~ "[A-Za-z]+" ]]
+	then
+		echo "Badly formated name: $name">&2
+		exit 3
+	fi
+
+	if [[ $gender =~ "^[fF]$" ]]
+	then
+		female_rank=$(grep -n -i "^$name,F," "$file" | cut -d':' -f1)
+		rank=$(echo "$female_result" | cut -d':' -f1)
+
+		if [ -n $female_rank ]
+		then
+			echo "$year: $name ranked $female_rank out of $female_total female names."
+		else
+			echo "$year: $name not found among female names."
+		fi
+	fi
+
+	if [[ $gender =~ "^[mM]$" ]]
+    then
+        male_rank=$(grep -n -i "^$name,M," "$file" | cut -d':' -f1)
+
+        if [ -n $male_rank ]
+        then
+            echo "$year: $name ranked $male_rank out of $male_total male names."
+        else
+            echo "$year: $name not found among male names."
+    	fi
+	fi
+
+	if [[ $gender =~ "^[bB]$" ]]
+    then
+        female_rank=$(grep -n -i "^$name,F," "$file" | cut -d':' -f1)
+		male_rank=$(grep -n -i "^$name,M," "$file" | cut -d':' -f1)
+
+        if [ -n $female_rank ]
+        then
+            echo "$year: $name ranked $female_rank out of $female_total female names."
+        else
+            echo "$year: $name not found among female names."
+    	fi
+
+		if [ -n $male_rank ]
+        then
+            echo "$year: $name ranked $male_rank out of $male_total male names."
+        else
+            echo "$year: $name not found among male names."
+		fi
+	fi
+done
+
+
+
+
+
+
+
