@@ -7,10 +7,14 @@
 #Looks through a database of US baby names and prints the rank of a name.
 #########################################################################
 
+#usage funtion: when called prints the usage string to stderr
+#called before all exit failures cases.
 usage(){
 	echo "bn <year> <assigned gender: f|F|m|M|b|B>">&2
 }
 
+#help function, called using the bn --help command
+#prints help
 help(){
     echo "Baby Names Utility v1.0.0"
     echo "Overview: Allows users to search for US baby name rankings"
@@ -21,14 +25,23 @@ help(){
     exit 0
 }
 
+#takes 4 arguments: name, gender, file, year
+#uses this info to echo the rankings
 rank(){
     local name=$1
     local gender=$2
     local file=$3
     local year=$4
 
+	#checks the regex of $gender for f/F m/M b/B
+	#the prints the rank of the respective name in the respective file
+	#else prints 'name not found' message
     if [[ $gender =~ ^[fF]$ ]]
     then
+		#pipes grep by first filters regex of all females in the file
+		#then pipes and checks the regex for a matching name (case insessitive and also includes line number for rank)
+		#then pipe to grep -o to only print the line number (digits anchored to the begining)
+		#$() stores it to the female_rank variable.
     	female_rank=$(grep ",F," "$file" | grep -n -i "^$name,F," | grep -o '^[0-9]*')    
 
         if [ -n "$female_rank" ]
@@ -39,6 +52,8 @@ rank(){
         fi
     fi
 
+
+	#similar process is repeated for male names too
     if [[ $gender =~ ^[mM]$ ]]
     then
         male_rank=$(grep ",M," "$file" | grep -n -i "^$name,M," | grep -o '^[0-9]*')
@@ -51,6 +66,7 @@ rank(){
         fi
     fi
 
+	# similar process is repeated for both genders as well - echos the information for both male and female
     if [[ $gender =~ ^[bB]$ ]]
     then
         female_rank=$(grep ",F," "$file" | grep -n -i "^$name,F," | grep -o '^[0-9]*')
@@ -72,21 +88,24 @@ rank(){
     fi
 }
 
+# calls help utility if requested
+if [[ $1 == "--help" ]]
+then
+    help
+fi
+
+#checks if there are 2 command line arguments else prints usage message
 if [ "$#" != 2 ]
 then
 	usage
 	exit 1
 fi
 
-if [[ $1 == "--help" ]]
-then
-	help
-fi
-
 year="$1"
 file="us_baby_names/yob$year.txt"
 gender="$2"
 
+#checks if year is formated incorrectly then prints error message, usage and exits with code 2
 if ! [[ $year =~ ^[0-9]{4}$ ]]
 then
 	echo "Badly formatted year: $year">&2
@@ -94,6 +113,7 @@ then
 	exit 2
 fi
 
+#checks if gender is formated incorrectly and prints error, usage, and exits with code 2
 if ! [[ $gender =~ ^[fmbFMB]$ ]]
 then
     echo "Badly formatted assigned gender: $gender">&2
@@ -101,24 +121,30 @@ then
     exit 2
 fi
 
+#checks if file exists, and if no data exists then prints error message and exits with code 4
 if [ ! -f "$file" ]
 then
     echo "No data for $year">&2
     exit 4
 fi
 
+# stores the total number of male and female names in the given year
 female_total=$(grep -c ",F," "$file")
 male_total=$(grep -c ",M," "$file")
 
+#loops through stdin
+	#loops through all the words in each line (therefore allowing multiple names in one line)
 while read line
 do
 	for name in $line
-	do
+	do	
+		#if name is formated incorrectly, then print error message and exit with code 3
 		if ! [[ $name =~ ^[A-Za-z]+$ ]]
 		then
 			echo "Badly formatted name: $name">&2
 			exit 3
 		fi
+		#else calls the rank function with the needed information passes as arguments to the function.
 		rank "$name" "$gender" "$file" "$year"
 	done
 done
