@@ -30,7 +30,7 @@ usage(){
 #help function, called using the bn --help command
 #prints help
 #Globals: none
-Arguments: none
+#Arguments: none
 #Output: help message on how to use bn
 #Returns: none
 ##########
