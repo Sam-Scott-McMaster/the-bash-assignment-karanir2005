@@ -1,20 +1,39 @@
 #!/bin/bash
 
 #########################################################################
-#Name: Rushil Karani
-#MacID: karanir
-#The Bash Assignment
-#Looks through a database of US baby names and prints the rank of a name.
+# Name: Rushil Karani
+# MacID: karanir
+# The Bash Assignment
+# Looks through a database of US baby names and prints the rank of a name.
+# Globals: $year, $file, $gender, $female_total, $male_total
+# Arguments: $1 = year, $2 = 
+# Outputs: prints the rank of male/female name for the given year
 #########################################################################
 
+
+
+##########
 #usage funtion: when called prints the usage string to stderr
 #called before all exit failures cases.
+#Globals: none
+#Arguments: none
+#Output: usage message
+#Returns: none
+##########
 usage(){
 	echo "bn <year> <assigned gender: f|F|m|M|b|B>">&2
 }
 
+
+
+##########
 #help function, called using the bn --help command
 #prints help
+#Globals: none
+Arguments: none
+#Output: help message on how to use bn
+#Returns: none
+##########
 help(){
     echo "Baby Names Utility v1.0.0"
     echo "Overview: Allows users to search for US baby name rankings"
@@ -25,8 +44,16 @@ help(){
     exit 0
 }
 
+
+
+##########
 #takes 4 arguments: name, gender, file, year
 #uses this info to echo the rankings
+#Globals: none
+#Arguments: $1=name, $2=gender, $3=file, $4=year
+#Outputs: ranks of male/female name for given year
+#Returns: none
+##########
 rank(){
     local name=$1
     local gender=$2
